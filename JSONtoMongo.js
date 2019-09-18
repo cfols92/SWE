@@ -12,6 +12,7 @@ var fs = require('fs'),
 /* Connect to your database using mongoose - remember to keep your key secret*/
 //see https://mongoosejs.com/docs/connections.html
 //See https://docs.atlas.mongodb.com/driver-connection/
+mongoose.connect(config.db.uri,{useNewUrlParser: true});
 
 /* 
   Instantiate a mongoose model for each listing object in the JSON file, 
@@ -20,6 +21,45 @@ var fs = require('fs'),
 
   Remember that we needed to read in a file like we did in Bootcamp Assignment #1.
  */
+
+fs.readFile('listings.json','utf8', function(err, data) {
+  if(err)
+    throw err;
+  else {
+    data = JSON.parse(data);
+
+    data.entries.forEach(function(element) {
+
+      if(typeof(element.coordinates) == 'undefined') {
+        var building = new Listing({
+          "code" : element.code,
+          "name" : element.name,
+          // "coordinates": {
+          //   "latitude": "0",
+          //   "longitude": "0"
+          // },
+          "address": element.address
+        })
+      }
+      else {
+        var building = new Listing({
+          "code" : element.code,
+          "name" : element.name,
+          "coordinates": {
+            "latitude": element.coordinates.latitude,
+            "longitude": element.coordinates.longitude
+          },
+          "address": element.address
+        })
+      }
+
+      building.save(function(err){
+        if(err) console.log(err);
+      });
+
+    });
+  };
+});
 
 
 /*  
